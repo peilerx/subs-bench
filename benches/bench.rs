@@ -45,8 +45,9 @@ fn serial_subs_all_axis(lines: &[Line], t: f64, out: &mut [Point]) {
 }
 
 fn parallel_subs_all_axis(lines: &[Line], t: f64, out: &mut [Point]) {
-    out.par_iter_mut().enumerate().for_each(|(i, p)| {
-        let line = &lines[i];
+    lines.par_iter()
+    .zip(out.par_iter_mut())
+    .for_each(|(line, p)| {
         p.x = line.0.x + (line.1.x - line.0.x) * t;
         p.y = line.0.y + (line.1.y - line.0.y) * t;
         p.z = line.0.z + (line.1.z - line.0.z) * t;
@@ -62,13 +63,14 @@ fn serial_subs_xy(lines: &[Line], t: f64, rx: &mut [f64], ry: &mut [f64]) {
 }
 
 fn parallel_subs_xy(lines: &[Line], t: f64, rx: &mut [f64], ry: &mut [f64]) {
-    rx.par_iter_mut().zip(ry.par_iter_mut()).enumerate().for_each(|(i, (out_x, out_y))| {
-        let line = &lines[i];
+    lines.par_iter()
+    .zip(rx.par_iter_mut())
+    .zip(ry.par_iter_mut())
+    .for_each(|((line, out_x), out_y)| {
         *out_x = line.0.x + (line.1.x - line.0.x) * t;
         *out_y = line.0.y + (line.1.y - line.0.y) * t;
     });
 }
-
 fn serial_prep_subs_all_axis(lines: &Lines, t: f64, rx: &mut [f64], ry: &mut [f64], rz: &mut [f64]) {
     simd_subs(&lines.ox, &lines.dx, t, rx);
     simd_subs(&lines.oy, &lines.dy, t, ry);
