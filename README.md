@@ -4,12 +4,12 @@ Performance study of **DOD (Structure of Arrays)** vs **OOP (Array of Structures
 
 ## Full Benchmark Results (20M Lines)
 
-| Configuration | Serial (ms) | Parallel (ms) | Speedup (vs Base) |
-| :--- | :--- | :--- | :--- |
-| **AoS XYZ** | 92.6 | 82.3 | 1.00x (Baseline) |
-| **AoS XY** | 75.0 | 68.1 | 1.23x |
-| **SoA XYZ** (SIMD) | 81.6 | 83.8 | 1.13x |
-| **SoA XY** (SIMD) | **54.2** | **54.1** | **1.71x** |
+| Configuration | Serial (ms) | Parallel (ms) | 
+| :--- | :--- | :--- | 
+| **AoS XYZ** | 92.6 | 82.3 | 
+| **AoS XY** | 75.0 | 68.1 | 
+| **SoA XYZ** (SIMD) | 81.6 | 83.8 | 
+| **SoA XY** (SIMD) | **54.2** | **54.1** | 
 
 ---
 
