@@ -1,0 +1,20 @@
+[package]
+name = "subs-bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rayon = "1.10"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "bench"
+harness = false
+
+[profile.bench]
+lto = true
+codegen-units = 1
+opt-level = 3
+debug = true
