@@ -5,11 +5,11 @@ Performance study of **DOD (Structure of Arrays)** vs **OOP (Array of Structures
 ## RAM-Locality Benchmark (20M Lines)
 
 | Configuration | Serial (ms) | Parallel (ms) | 
-| :--- | :--- | :--- | 
-| **AoS XYZ** | 92.6 | 82.3 | 
-| **AoS XY** | 75.0 | 68.1 | 
-| **SoA XYZ** | 81.6 | 83.8 | 
-| **SoA XY** | **54.2** | **54.1** | 
+| :--- | :---: | :---: | 
+| **AoS XYZ** | 93.0 | 82.3 | 
+| **AoS XY** | 75.9 | 68.9 | 
+| **SoA XYZ** | 61.8 | 63.0 | 
+| **SoA XY** | **41.1** | **41.3** |
 
 ## Cache-Locality Benchmark (30k Lines)
 
