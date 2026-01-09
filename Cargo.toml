@@ -9,6 +9,10 @@ rayon = "1.10"
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 
+[lib]
+name = "subs_bench"
+path = "src/lib.rs"
+
 [[bench]]
 name = "bench"
 harness = false
