@@ -2,7 +2,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rayon::prelude::*;
 use std::simd::prelude::*;
-
+use std::simd::StdFloat;
 
 #[derive(Copy, Clone)]
 struct Point { x: f64, y: f64, z: f64 }
@@ -15,25 +15,53 @@ struct Lines {
     dx: Vec<f64>, dy: Vec<f64>, dz: Vec<f64>,
 }
 
-
 #[inline(always)]
-fn simd_subs(origin: &[f64], direction: &[f64], t: f64, out: &mut [f64]) {
+pub fn simd_subs(origin: &[f64], direction: &[f64], t: f64, out: &mut [f64]) {
+    assert_eq!(origin.len(), direction.len());
+    assert_eq!(origin.len(), out.len());
+
     let t_v = f64x4::splat(t);
+
     let (o_prefix, o_simd, o_suffix) = origin.as_simd::<4>();
     let (d_prefix, d_simd, d_suffix) = direction.as_simd::<4>();
-    let (out_prefix, out_simd, out_suffix) = out.as_simd_mut::<4>();
+    let (out_prefix, out_simd_mut, out_suffix) = out.as_simd_mut::<4>();
 
-    for i in 0..o_prefix.len() {
-        out_prefix[i] = o_prefix[i] + d_prefix[i] * t;
+    o_prefix.iter()
+    .zip(d_prefix.iter())
+    .zip(out_prefix.iter_mut())
+    .for_each(|((&o, &d), res)| {
+        *res = f64::mul_add(d, t, o);
+    });
+
+    let mut o_chunks = o_simd.chunks_exact(8);
+    let mut d_chunks = d_simd.chunks_exact(8);
+    let mut out_chunks = out_simd_mut.chunks_exact_mut(8);
+
+    for ((o_c, d_c), out_c) in o_chunks.by_ref().zip(d_chunks.by_ref()).zip(out_chunks.by_ref()) {
+        out_c[0] = d_c[0].mul_add(t_v, o_c[0]);
+        out_c[1] = d_c[1].mul_add(t_v, o_c[1]);
+        out_c[2] = d_c[2].mul_add(t_v, o_c[2]);
+        out_c[3] = d_c[3].mul_add(t_v, o_c[3]);
+        out_c[4] = d_c[4].mul_add(t_v, o_c[4]);
+        out_c[5] = d_c[5].mul_add(t_v, o_c[5]);
+        out_c[6] = d_c[6].mul_add(t_v, o_c[6]);
+        out_c[7] = d_c[7].mul_add(t_v, o_c[7]);
     }
-    for (i, (o_v, d_v)) in o_simd.iter().zip(d_simd.iter()).enumerate() {
-        out_simd[i] = *o_v + *d_v * t_v;
-    }
-    for i in 0..o_suffix.len() {
-        out_suffix[i] = o_suffix[i] + d_suffix[i] * t;
-    }
+
+    o_chunks.remainder().iter()
+    .zip(d_chunks.remainder().iter())
+    .zip(out_chunks.into_remainder().iter_mut())
+    .for_each(|((&ov, &dv), outv)| {
+        *outv = dv.mul_add(t_v, ov);
+    });
+
+    o_suffix.iter()
+    .zip(d_suffix.iter())
+    .zip(out_suffix.iter_mut())
+    .for_each(|((&o, &d), res)| {
+        *res = f64::mul_add(d, t, o);
+    });
 }
-
 
 fn serial_subs_all_axis(lines: &[Line], t: f64, out: &mut [Point]) {
     for i in 0..lines.len() {
@@ -99,6 +127,7 @@ fn parallel_prep_subs_xy(ox: &[f64], dx: &[f64], oy: &[f64], dy: &[f64], t: f64,
 
 
 fn subs_bench(c: &mut Criterion) {
+    // let size = 30_000;
     let size = 20_000_000;
     let t = 0.42;
 
