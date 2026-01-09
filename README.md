@@ -2,14 +2,23 @@
 
 Performance study of **DOD (Structure of Arrays)** vs **OOP (Array of Structures)** using Rust's `portable_simd`. This project demonstrates the "Memory Wall" effect and how data layout impacts CPU cache efficiency and RAM bandwidth saturation.
 
-## Full Benchmark Results (20M Lines)
+## RAM-Locality Benchmark (20M Lines)
 
 | Configuration | Serial (ms) | Parallel (ms) | 
 | :--- | :--- | :--- | 
 | **AoS XYZ** | 92.6 | 82.3 | 
 | **AoS XY** | 75.0 | 68.1 | 
-| **SoA XYZ** (SIMD) | 81.6 | 83.8 | 
-| **SoA XY** (SIMD) | **54.2** | **54.1** | 
+| **SoA XYZ** | 81.6 | 83.8 | 
+| **SoA XY** | **54.2** | **54.1** | 
+
+## Cache-Locality Benchmark (30k Lines)
+
+| Configuration | Serial (µs) | Parallel (µs) | 
+| :--- | :---: | :---: | 
+| **AoS XYZ** | 62.0 | 58.6 | 
+| **AoS XY** | 40.5 | 46.9 | 
+| **SoA XYZ** | 40.8 | 42.8 | 
+| **SoA XY** | **25.4** | **32.3** | 
 
 ---
 
