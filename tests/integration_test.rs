@@ -4,11 +4,8 @@ use subs_bench::*;
 mod tests {
     use super::*;
 
-    // Точность 1e-15 идеальна для f64 при использовании FMA
     const EPS: f64 = 1e-15;
 
-    // Подготовка данных: создаем AoS линии и SoA таргеты (P1).
-    // Выходные векторы rx, ry, rz СРАЗУ инициализируем значениями P0.
     fn setup_test_data(size: usize) -> (Vec<Line>, Lines, Vec<f64>, Vec<f64>, Vec<f64>) {
         let mut aos_lines = Vec::with_capacity(size);
         let mut soa_lines = Lines {
@@ -29,7 +26,6 @@ mod tests {
             soa_lines.ty.push(p1.y);
             soa_lines.tz.push(p1.z);
 
-            // Инициализируем выходные массивы стартовыми точками P0
             rx[i] = p0.x;
             ry[i] = p0.y;
             rz[i] = p0.z;
@@ -44,13 +40,10 @@ mod tests {
 
         for &size in &sizes {
             let (aos, soa, mut rx, mut ry, mut rz) = setup_test_data(size);
-            // Для AoS эталона создаем чистый вектор
             let mut aos_out = vec![Point { x: 0.0, y: 0.0, z: 0.0 }; size];
 
-            // Вычисляем классическим способом (AoS)
             serial_subs_all_axis(&aos, t, &mut aos_out);
 
-            // Вычисляем нашим SIMD методом (SoA, In-place)
             serial_prep_subs_all_axis(&soa, t, &mut rx, &mut ry, &mut rz);
 
             for i in 0..size {
@@ -72,7 +65,6 @@ mod tests {
 
         for i in 0..100 {
             let diff = (aos_out[i].x - rx[i]).abs();
-            // Увеличиваем допуск до 2e-15 для компенсации разницы FMA
             assert!(diff < 2e-15, "FMA drift too high at idx {}: {}", i, diff);
         }
     }
@@ -83,7 +75,6 @@ mod tests {
         let t = 0.5;
         let (_, soa, mut rx_ser, mut ry_ser, mut rz_ser) = setup_test_data(size);
 
-        // Клонируем данные, которые уже содержат P0
         let (mut rx_par, mut ry_par, mut rz_par) = (rx_ser.clone(), ry_ser.clone(), rz_ser.clone());
 
         serial_prep_subs_all_axis(&soa, t, &mut rx_ser, &mut ry_ser, &mut rz_ser);
@@ -106,7 +97,6 @@ mod tests {
         let mut ry_stream = ry_norm.clone();
         let mut rz_stream = rz_norm.clone();
 
-        // Сравниваем обычный SIMD и стриминг через BATCH_SIZE
         serial_prep_subs_all_axis(&soa, t, &mut rx_norm, &mut ry_norm, &mut rz_norm);
         serial_stream_subs_all_axis(&soa, t, &mut rx_stream, &mut ry_stream, &mut rz_stream);
 

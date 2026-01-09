@@ -21,22 +21,17 @@ pub fn simd_subs(target: &[f64], t: f64, out: &mut [f64]) {
     let t_v = f64x4::splat(t);
     let mut i = 0;
 
-    // Ручная векторизация: идем по 4 элементам
     while i + 3 < len {
-        // Явная загрузка из памяти в регистры
         let p0_v = f64x4::from_slice(&out[i..i+4]);
         let p1_v = f64x4::from_slice(&target[i..i+4]);
 
-        // Математика: (P1 - P0) * t + P0
         let res_v = (p1_v - p0_v).mul_add(t_v, p0_v);
 
-        // Явная выгрузка из регистров в память
         res_v.copy_to_slice(&mut out[i..i+4]);
 
         i += 4;
     }
 
-    // Добиваем остаток (скалярно)
     while i < len {
         let p0 = out[i];
         out[i] = p0 + (target[i] - p0) * t;
